@@ -1,0 +1,16 @@
+
+
+# dotenv environment variables file
+.env
+.env.test
+
+
+# deployment.yaml
+package-lock.json
+# credentials
+fcm-admin-key.json
+source.json
+
+
+# Dependency directories
+node_modules/
