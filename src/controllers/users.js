@@ -49,29 +49,28 @@ const signup_user = async function (data, response, cb) {
 				})
 				.toJS()
 		);
-	}
-	/*if(data.password){
-		
-		utilities.generatePassword(async (err, cb) => {
-			if (err) {
-				console.log(err);
-				
-			}
-			console.log({cb},"ki");
-		})
-	
-}     */
+	} 		   
+utilities.generatePassword(data.password,async(err, hash ) => {
+	if (err) {
+		return cb(
+				errMessage(
+				'generatePassword',
+				 data,
+				'Unable to hashing data',
+				 err
+			    ));
+			} 
     let timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 	    let insert = {
 		    account_id: data.account_id,
-		    salt: data.salt,
-            password : data.password,
+		    salt: hash.hash,
+        	password : data.password,
             email :data.email,
             name:data.name,
 		    photo: data.photo,
 		    is_deleted:data.is_deleted,
 		    created_at: timestamp
-	    }; 	
+	    } 	
 	try {
 	    const result = await signup(insert);
         return cb(
@@ -82,11 +81,12 @@ const signup_user = async function (data, response, cb) {
 				data,
 				result
 			))
-	} catch (err) {
+	}catch (err) {
 		return cb(
 			errMessage('fetch_user', data, 'Unable to fetch user data', err)
 		);
 	}
+    })
 	
 };
 
