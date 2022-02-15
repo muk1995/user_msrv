@@ -50,6 +50,17 @@ const signup_user = async function (data, response, cb) {
 				.toJS()
 		);
 	}
+	/*if(data.password){
+		
+		utilities.generatePassword(async (err, cb) => {
+			if (err) {
+				console.log(err);
+				
+			}
+			console.log({cb},"ki");
+		})
+	
+}     */
     let timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 	    let insert = {
 		    account_id: data.account_id,

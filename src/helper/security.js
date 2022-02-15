@@ -43,10 +43,10 @@ exports.decryptData = decryptData;
 const generatePassword = function (plaintext, cb) {
     const bcrypt = require('bcrypt');
     const crypto = require('crypto');
-    const saltRounds = parseInt(process.env.PASS_SALT_ROUNDS);
-    const staticSalt = process.env.PASS_SALT_STATIC;
+    const saltRounds =   10;              //parseInt(process.env.PASS_SALT_ROUNDS);
+   // const staticSalt =   "19",                 // process.env.PASS_SALT_STATIC;
     const randomSalt = crypto.randomBytes(128).toString('hex');
-    bcrypt.hash((plaintext + staticSalt), saltRounds, function (err, hash) {
+    bcrypt.hash((plaintext ), saltRounds, function (err, hash) {
         if (err) {
             return cb(err);
         }
