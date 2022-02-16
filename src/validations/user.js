@@ -10,9 +10,10 @@ const schemas = {
 
 	}),
 	login: Joi.object({
-		phone: Joi.string().length(10).pattern(/^[0-9]+$/).required(),
-		cc: Joi.string().required(),
-		otp: Joi.required()
+		type: Joi.number().required().valid(1),
+		email: Joi.alternatives().conditional('type', { is: 1, then: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required()}),
+		phone: Joi.alternatives().conditional('type', { is: 1, then: Joi.string().length(10).pattern(/^[0-9]+$/).required()}),
+		password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
 	})
 };
 

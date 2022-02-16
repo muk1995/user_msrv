@@ -29,4 +29,26 @@ router.post(
     }); 
 }
 ); 
+const loginValidator = joiValidator(schemas.login, 'body', 'users');
+router.post(
+	'/v1/user/login',
+	loginValidator,
+	(req, res) => {
+	let data = { ...req.combined_body, ...req.params } || {};
+	data.req = req.data;
+	data.req.path = req.path;
+	user.login(data, function (err, response) {
+		var status = 0;
+		if (err) {
+			status = err.status;
+			return res.status(status).send(err);
+		}
+		status = response.status;
+		return res.status(status).send(response);
+			
+		});
+		
+	}
+);
+
 module.exports = router;
