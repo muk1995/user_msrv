@@ -63,14 +63,10 @@ const signup_user = async function (data, response, cb) {
 				errMessage('signup_user', data, ' email is already exist', user.email)
 				);
 			}
-		} catch (err) {
-			return cb(
-				errMessage('signup_user', data, 'Unable to check email user data', err)
-			);
-		}
-	}			   
-utilities.generatePassword(data.password,async(err, hash ) => {
-	if (err) {
+		} catch (err) {	
+
+	utilities.generatePassword(data.password,async(err, hash ) => {
+		if (err) {
 		return cb(
 				errMessage(
 				'generatePassword',
@@ -79,35 +75,83 @@ utilities.generatePassword(data.password,async(err, hash ) => {
 				 err
 			    ));
 			} 
-    let timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+    
 	    let insert = {
-		    account_id: data.account_id,
-		    salt: hash.hash,
-        	password : data.password,
+		    //account_id: data.account_id,
+		    //salt: hash.hash,
+        	password :  hash,
             email :data.email,
             name:data.name,
 		    photo: data.photo,
 		    is_deleted:data.is_deleted,
-		    created_at: timestamp
-	    } 	
-	try {
-	    const result = await signup(insert);
-        return cb(
-			null,
-			successMessage(
-				'signup',
-				'Successfully signup!',
-				data,
-				result
-			))
-	}catch (err) {
+		    //created_at: timestamp
+	    		}
+	 
+    	create_accountid(data,insert, cb);		
+				})	
+			}
+		}
+}	
+const create_accountid = async function (data, response, cb) {
+	if (!cb) {
+		cb = response;	
+	}
+	if (!response) {
 		return cb(
-			errMessage('signup_user', data, 'Unable to signup user data', err)
+			responseStruct
+				.merge({
+					signature: data.req.signature,
+					action: 'signup_user',
+					status: 400,
+					success: false,
+					message: 'Params missing'
+				})
+				.toJS()
 		);
 	}
-    })
-	
-};
+	/*utilities.generate_account_id(async (err, account_id) => {
+		if (err) {
+			return cb(
+				errMessage(
+					'generate_account_id',
+					data,
+					'Unable to generate account id',
+					err
+				)
+			);
+		}
+	*/
+	    const account_id = Math.floor(Math.random() * (99999999 - 11111111) + 11111111);	
+		let timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+		// GENERATE SALT
+		let details = {
+			account_id: account_id.toString(),
+			salt: `temp_salt_${account_id}`,
+			password : response.password.hash,
+            email :response.email,
+            name:response.name,
+		    photo: response.photo,
+		    is_deleted:response.is_deleted,
+		    created_at: timestamp
+		};
+		try {
+			const result = await signup(details);
+			return cb(
+				null,
+				successMessage(
+					'signup',
+					'Successfully signup!',
+					data,
+					result
+				))
+		}catch (err) {
+			return cb(
+				errMessage('signup_user', data, 'Unable to signup user data', err)
+			);
+		}
+		
+}	
+
 const login = async function (data, response, cb) {
 	if (!cb) {
 		cb = response;
