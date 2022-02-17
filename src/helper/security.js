@@ -4,14 +4,12 @@ const encryptData = function (data, key, cb) {
         const Crypto = require('crypto');
         const encKey = Crypto.createHash('sha256').update(key + process.env.PASS_SALT_STATIC).digest();
         const plaintext = JSON.stringify(data);
-
         let iv = Crypto.randomBytes(16);
 
         let cipher = Crypto.createCipheriv('aes-256-cbc', encKey, iv);
         let encrypted = cipher.update(plaintext);
         let finalBuffer = Buffer.concat([encrypted, cipher.final()]);
         let encryptedData = iv.toString('hex') + finalBuffer.toString('hex');
-
         cb(null, encryptedData);
     } catch (e) {
         cb(e);

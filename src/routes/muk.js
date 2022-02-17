@@ -3,8 +3,9 @@ const router = express();
 
 
 router.get('/mu',(req,res)=>{
-    console.log(req.headers['user-agent']);
-    res.json({
+    console.log(req.headers['X-Refresh-Token']);
+    res.json(req.headers['X-Refresh-Token'])
+   /* res.json({
          method: req.method,
         baseUrl: req.baseUrl,
         cookies: req.cookies,
@@ -20,6 +21,6 @@ router.get('/mu',(req,res)=>{
         originalUrl: req.originalUrl,
         route: req.route
        })
-    res.send("muk")
-});
+    res.send("muk")*/
+}); 
 module.exports = router

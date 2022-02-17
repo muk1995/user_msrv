@@ -20,7 +20,7 @@
   
   let app = express();
   app.use(compression())
-  
+  app.use(cookieParser());
   app.set('trust proxy', true);
   app.use(helmet());
   

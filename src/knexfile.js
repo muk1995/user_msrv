@@ -1,4 +1,6 @@
  /*module.exports = {
+   //link about knex
+   //https://stackfame.com/knexjs-complete-tutorial
 //  https://dev.to/easybuoy/setting-up-a-node-api-with-postgres-and-knex-588f
   development: {
     client: 'mysql',

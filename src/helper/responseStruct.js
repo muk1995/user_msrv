@@ -33,7 +33,7 @@ class ResponseStruct {
 			this.log.merge({
 				error: err ? err.error || err.message || err : null,
 				message: err ? err.message || message : 'Something went wrong',
-				signature: data.req.signature,
+				signature: data.req.signature ,
 				route: data.req.path,
 				function: funcName
 			})
@@ -52,7 +52,7 @@ class ResponseStruct {
 	successMessage = (action, message, data, resData, userId, metadata) => {
 		return this.responseStruct
 			.merge({
-				signature: data.req.signature,
+				signature: data.req.signature || null ,
 				action: action,
 				status: 200,
 				success: true,

@@ -1,6 +1,7 @@
 const mute = require('immutable');
 const async = require('async');
 const moment = require('moment');
+const bcrypt = require('bcrypt');
 const { signup}  = require("../models/users")
 // Models
 const users = require('../models/users');
@@ -169,16 +170,31 @@ const login = async function (data, response, cb) {
 				.toJS()
 		);
 	} 	
-	let user_data = [];	   
+	let user_data = [];	
+	const plaintextInput = data.password  
+	
+	
     if (data.email){
 		let where = {
 			email: data.email,
-			password: data.password
 		};
-
+		
 		try {
-			user_data = await users.check_data(where);
-		} catch (err) {
+        user_data = await users.check_data(where);
+			try{
+				const hash = user_data.password
+				const compare = await bcrypt.compare(plaintextInput, hash).then(function(result) { return result})
+				if(compare == false){
+					return cb(
+						errMessage('login', data, 'please enter correct password', compare)
+					);
+				}
+			} catch (err) {
+				return cb(
+					errMessage('login', data, 'Unable to compare password', err)
+				);
+			}
+	   	} catch (err) {
 			return cb(
 				errMessage('login', data, 'Unable to fetch user data', err)
 			);
@@ -198,7 +214,6 @@ const login = async function (data, response, cb) {
 			);
 		}
 	}
-	console.log(user_data.id,"id")
     let data_to_encrypt = {
 		id: user_data.id,
 		account_id: user_data.account_id,
@@ -206,7 +221,7 @@ const login = async function (data, response, cb) {
 		name: user_data.name,
 		photo: user_data.photo,
 	};
-	let salt = user_data.salt;
+	let salt = null;
 	utilities.encryptData(data_to_encrypt, salt, function (err, cipher) {
 		if (err) {
 			return cb(
@@ -225,9 +240,9 @@ const login = async function (data, response, cb) {
 			name: user_data.name,
 			photo: user_data.photo,
 			new_user: user_data.name ? false : true,
-			session_token: cipher
+			session_token: cipher,
 		};
-
+		
 		return cb(
 			null,
 			successMessage(
@@ -239,6 +254,82 @@ const login = async function (data, response, cb) {
 		);
 	});
 };
+const user_profile = async function (data, response, cb) {
+	if (!cb) {
+		cb = response;
+	}
+	if(!data.req.request.cookies.token){
+		return cb(
+			responseStruct
+				.merge({
+					signature: data.req.signature,
+					action: 'user_profile',
+					status: 400,
+					success: false,
+					message: 'please  login first '
+				})
+				.toJS()
+		);
+	}
+	let user = data.req.request.cookies.token;
+	const decryptedData = user;
+	utilities.decryptData(decryptedData, null , function (e, decryptedData) {
+		if (e) {
+			return cb(
+				errMessage(
+					'Login decryptData',
+					data,
+					'Unable to dencrypt data',
+					e
+				)
+			);
+		}
+	const result = decryptedData
+	console.log(result)
+		return cb(
+			null,
+			successMessage(
+				'user_profile data',
+				'Successfully user_profile data',
+				data,
+				result
+			)
+		);
+	})	
+}
+const other_profile = async function (data, response, cb) {
+	if (!cb) {
+		cb = response;
+	}
+	let user_data = []
+	let where = {
+		account_id: data.id,
+	};
 
+	try {
+		user_data = await users.check_data(where);
+		let result = {
+			id: user_data.id,
+			account_id: user_data.account_id,
+			email: user_data.email,
+			name: user_data.name,
+			photo: user_data.photo,
+		};
+		return cb(
+			null,
+			successMessage(
+				'other_profile',
+				'Successfully other_profile!',
+				data,
+				result
+			)
+		);
+	} catch (err) {
+		return cb(
+			errMessage('other_profile', data, 'Unable to fetch other_profile data ', err)
+		);
+	}
+}
+		
 
-module.exports = {signup_user ,login }
+module.exports = {signup_user ,login ,user_profile,other_profile }
