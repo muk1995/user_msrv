@@ -2,7 +2,7 @@ const mute = require('immutable');
 const async = require('async');
 const moment = require('moment');
 const bcrypt = require('bcrypt');
-const { signup}  = require("../models/users")
+const { signup,check_data,get_used_account_ids,add_friend,check_status}  = require("../models/users")
 // Models
 const users = require('../models/users');
 
@@ -285,7 +285,6 @@ const user_profile = async function (data, response, cb) {
 			);
 		}
 	const result = decryptedData
-	console.log(result)
 		return cb(
 			null,
 			successMessage(
@@ -330,6 +329,102 @@ const other_profile = async function (data, response, cb) {
 		);
 	}
 }
-		
+const friend = async function (data, response, cb) {
+	if (!cb) {
+		cb = response;
+	}
 
-module.exports = {signup_user ,login ,user_profile,other_profile }
+	if(!data.req.request.cookies.token){
+		return cb(
+			responseStruct
+				.merge({
+					signature: data.req.signature,
+					action: 'friend',
+					status: 400,
+					success: false,
+					message: 'please  login first '
+				})
+				.toJS()
+		);
+	}
+	
+	checkdata ={
+	user_two : data.id,	
+	status:	data.status 
+	}
+	const checkstatus = await check_status(checkdata)
+	.then(results => {
+		return results;
+	}).catch(err => {
+		 return  cb(
+				errMessage('friend', data, 'Unable to fetch user_profile data ', err))
+		});
+	const valid = checkstatus == null;
+	
+	if (!valid) {
+		return cb(
+			errMessage('friend', data, `already ${data.status} your  Friend Request `,data.status))
+	}
+	
+	//async.waterfall([async.apply(user_profile, data), async.apply(other_profile, data)],cb);
+	const userprofile = await async.waterfall([async.apply(user_profile , data)])
+	.then(results => {
+		return results;
+	}).catch(err => {
+		 return  cb(
+			errMessage('friend', data, 'Unable to fetch user_profile data ', err))
+	});
+	const otherprofile = await async.waterfall([async.apply(other_profile , data)])
+	.then(results => {
+		return results;
+	}).catch(err => {
+		 return cb(
+			errMessage('friend', data, 'Unable to fetch other_profile data ', err))
+	});
+    let timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+	let details = {
+		user_one : userprofile.data.account_id,
+		user_two : otherprofile.data.account_id,
+		status  : data.status,
+		created_at: timestamp
+	};
+	try {
+		const result = await add_friend(details);
+		return cb(
+			null,
+			successMessage(
+				'friend',
+				`Successfully friends ${data.status} !`,
+				data,
+				result
+			))
+	}catch (err) {
+		return cb(
+			errMessage('signup_user', data, `Unable to friend  ${data.status}`, err)
+		);
+	}
+	
+	
+	
+}
+const friend_remove = async function (data, response, cb) {
+	if (!cb) {
+		cb = response;
+	}
+
+	if(!data.req.request.cookies.token){
+		return cb(
+			responseStruct
+				.merge({
+					signature: data.req.signature,
+					action: 'friend_remove',
+					status: 400,
+					success: false,
+					message: 'please  login first '
+				})
+				.toJS()
+		);
+	}		
+	async.waterfall([async.apply(friend, data)],cb);
+}
+module.exports = {signup_user ,login ,user_profile,other_profile ,friend,friend_remove}

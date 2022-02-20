@@ -92,4 +92,42 @@ router.get(
 		
 	}
 );		
+router.post(
+	'/v1/user/:id/friend',
+	(req, res) => {
+	let data = { ...req.combined_body, ...req.params } || {};
+	data.req = req.data;
+	data.req.path = req.path;
+	user.friend(data, function (err, response) {
+		var status = 0;
+		if (err) {
+			status = err.status;
+			return res.status(status).send(err);
+		}
+		status = response.status;
+        return res.status(status).send(response);
+			
+		});
+		
+	}
+);
+router.delete(
+	'/v1/user/:id/friend',
+	(req, res) => {
+	let data = { ...req.combined_body, ...req.params } || {};
+	data.req = req.data;
+	data.req.path = req.path;
+	user.friend_remove(data, function (err, response) {
+		var status = 0;
+		if (err) {
+			status = err.status;
+			return res.status(status).send(err);
+		}
+		status = response.status;
+        return res.status(status).send(response);
+			
+		});
+		
+	}
+);		
 module.exports = router;

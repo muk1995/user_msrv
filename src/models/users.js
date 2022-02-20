@@ -3,8 +3,13 @@ const moment = require('moment');
 
 
 const signup = function (data) { return db('users').insert(data); }
+
 const check_data = function (data) { return db('users').where(data).first(); }
-    
+
+const add_friend = function (data) { return db('friends').insert(data); }
+
+const check_status = function (data) { return db('friends').where(data).first(); }
+
 const get_used_account_ids = function (data, done) {
 	let query_builder = db.raw(
 		` SELECT array_agg(account_id) AS csv_data FROM ` + users + `;`
@@ -18,6 +23,6 @@ const get_used_account_ids = function (data, done) {
 	});
 };
 
-module.exports = {signup,check_data,get_used_account_ids}
+module.exports = {signup,check_data,get_used_account_ids,add_friend,check_status}
    
 
